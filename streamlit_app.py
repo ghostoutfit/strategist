@@ -75,4 +75,5 @@ def make_slider(label, min_val, max_val, default_val, left_label, right_label, k
     return value
 
 
-val1 = make_slider("Drag the slider to the place that matches where you were today:", 0, 100, 0, "Holding Back", "Showing Up", key="s1", label_size="16px")
+val1 = make_slider("Where were you today?", 0, 100, 0, "Holding Back", "Showing Up", key="s1", label_size="18px")
+st.write("Value:", val1)
