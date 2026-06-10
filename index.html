@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Contribution Reflection</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f1116;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .loading {
+    color: #9ca3af;
+    font-size: 16px;
+    text-align: center;
+    padding: 60px 0;
+  }
+
+  .error-box {
+    background: #2d1515;
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .muted {
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .label {
+    font-size: 14px;
+    color: #d1d5db;
+    font-weight: 500;
+  }
+
+  .question {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.5;
+  }
+
+  .goal-callout {
+    background: #1a1506;
+    border: 1px solid #F6AD5544;
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: #F6AD55;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .input, .textarea, .select {
+    width: 100%;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    color: #e0e0e0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: #F6AD55;
+  }
+
+  .textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+  }
+
+  .select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .select option { background: #1a1a2e; }
+
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    background: #2a2a4a;
+    color: #e0e0e0;
+    font-family: inherit;
+  }
+
+  .btn:hover { opacity: 0.8; }
+
+  .btn-primary { background: #F6AD55; color: #0f1116; }
+  .btn-green   { background: #22c55e; color: #fff; }
+  .btn-red     { background: #ef4444; color: #fff; }
+  .btn-ghost   {
+    background: transparent;
+    color: #6b7280;
+    font-size: 13px;
+    padding: 6px 12px;
+    font-weight: 400;
+  }
+  .btn-ghost:hover { color: #9ca3af; }
+
+  .row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #2a2a4a;
+    margin: 4px 0;
+  }
+
+  /* Radio group */
+  .radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    cursor: pointer;
+    color: #d1d5db;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #2a2a4a;
+    transition: border-color 0.15s;
+  }
+
+  .radio-label:hover { border-color: #F6AD5577; }
+  .radio-label.checked { border-color: #F6AD55; color: #fff; }
+  .radio-label input { accent-color: #F6AD55; }
+
+  /* Word buttons */
+  .word-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .word-btn {
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    color: #9ca3af;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  .word-btn:hover  { border-color: #F6AD55; color: #F6AD55; }
+  .word-btn.active { background: #F6AD5522; border-color: #F6AD55; color: #F6AD55; }
+
+  /* Conversation */
+  .conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #12121e;
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+    padding: 18px;
+  }
+
+  .chat-ai {
+    color: #e0e0e0;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .chat-user {
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.5;
+    padding-left: 12px;
+    border-left: 2px solid #2a2a4a;
+  }
+
+  .tone-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #2a2a4a;
+    color: #9ca3af;
+  }
+
+  .success-msg {
+    color: #22c55e;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 14px 16px;
+    background: #0d2218;
+    border: 1px solid #22c55e44;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+// ─── CONFIG ──────────────────────────────────────────────────
+// After deploying your Apps Script, paste the URL here:
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxiPyiaQGgMbp10hlaE0yeKFN-czW4oLVat0SBHnaYgVkWsnyxmq8WqXcUuCDUrME9ayQ/exec';
+
+// ─── CONTENT DATA ────────────────────────────────────────────
+const GOALS = [
+  "Goal 1: Every time we are asked to turn and talk, I will say one thing on topic to my partner.",
+  "Goal 2: Every time we talk as a group, I will contribute at least 1 idea or ask 1 question.",
+  "Goal 3: Raise my hand and make contributions or ask questions.",
+  "Goal 4: Give my ideas to someone else, then encourage others to share them out.",
+  "Goal 5: Ask people what they think, and use '3 before me'",
+  "Goal 6: Ask questions to the teacher or small group when I get lost.",
+  "Goal 7: Use the phrase, \"I am only 20% sure…\" to let people know I am taking a risk.",
+  "Goal 8: Say something on topic to my shoulder partner, and ask them to share it for me.",
+  "Goal 9: Stay engaged in on topic conversation with my group members at every opportunity."
+];
+
+const WARMUP_HUMANIZING = [
+  "What's something you felt proud of recently?",
+  "What are you looking forward to this week?",
+  "What's something that surprised you today?",
+  "What's one time this week where you persevered through setbacks?",
+  "What's one moment that made you smile this week?"
+];
+
+const WARMUP_WORDS = [
+  'Chill','Tired','Stressed','Fired up','Meh','Not in the mood',
+  'Hopeful','Frustrated','Focused','Zoning out','Quiet','Distracted',
+  'Nervous','Confident','Curious','Burned out','Energized','Ready'
+];
+
+const SCORE_LABELS = {
+  4: "Met and exceeded",
+  3: "Met goal",
+  2: "Almost met",
+  1: "Tried but didn't succeed",
+  0: "Didn't attempt"
+};
+
+// ─── STATE ───────────────────────────────────────────────────
+let S = {
+  step: 'enter_id',
+  studentId: null,
+  student: null,
+  history: [],               // cached after init — avoids re-fetching
+  goalToReflect: null,      // { text, setDate, source }
+  latestReflection: '',
+  latestScoreValue: 0,
+  chatHistory: [],           // [ { ai: '...', user?: '...' } ]
+  chatTurnCount: 0,
+  tonePref: 'real_one',
+  warmupPrompt: null,
+  oneWordOptions: [],
+  selectedWords: [],
+  loading: false,
+  error: null
+};
+
+function set(updates) {
+  Object.assign(S, updates);
+  render();
+}
+
+// ─── API ─────────────────────────────────────────────────────
+// Body is sent as text/plain to avoid CORS preflight with Apps Script.
+async function api(action, data = {}) {
+  const res = await fetch(BACKEND_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    body: JSON.stringify({ action, ...data })
+  });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || 'API error');
+  return json.data;
+}
+
+// ─── UTILITIES ───────────────────────────────────────────────
+function pick(arr, n) {
+  return [...arr].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return Infinity;
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+function resetState() {
+  S = {
+    step: 'enter_id', studentId: null, student: null, history: [], goalToReflect: null,
+    latestReflection: '', latestScoreValue: 0, chatHistory: [], chatTurnCount: 0,
+    tonePref: 'real_one', warmupPrompt: null, oneWordOptions: [], selectedWords: [],
+    loading: false, error: null
+  };
+}
+
+// ─── PROMPT BUILDERS ─────────────────────────────────────────
+function scoreBehavior(score) {
+  return score <= 2
+    ? "They scored 0–2. Help them find concrete strategies to meet this goal next time."
+    : "They scored 3–4. Acknowledge the success, then nudge them toward a harder goal.";
+}
+
+function buildRealOnePrompt(goal, score, reflection, background, lengthPref) {
+  return `You talk like someone who actually cares but hates fake school conversations. You keep it real. You don't flatter, but you notice effort. You speak plainly, ask real questions, don't push too hard. Every reply should feel like a conversation you'd actually have with a smart, tired 9th grader.
+
+Student's goal: ${goal}
+Self-assessment: ${score}/4 — ${SCORE_LABELS[score]}
+What helped or got in the way: "${reflection}"
+Background: ${background}
+
+${scoreBehavior(score)}
+${lengthPref}
+
+Pick up on anything real in their reflection. Ask an honest follow-up. If stuck, suggest 1–2 low-pressure things to try. Be concise. No therapy voice. Lightly connect to background info when it fits.`;
+}
+
+function buildDrillSergeantPrompt(goal, score, reflection, background, lengthPref) {
+  return `You are here to push the student to improve. Sharp, exacting, focused on results. If they give a vague answer, call it out briefly and push harder. End with a direct challenge — sometimes ask why this matters to them or what they're trying to prove. Not soft, not friendly. Pressure and precision in service of growth.
+
+Student's goal: ${goal}
+Self-assessment: ${score}/4 — ${SCORE_LABELS[score]}
+Reflection: "${reflection}"
+Background (less important): ${background}
+
+${scoreBehavior(score)}
+${lengthPref}
+
+Pick up on anything real. Ask an honest follow-up. Be concise. No fake encouragement.`;
+}
+
+function buildOnboardPrompt() {
+  return `You talk like someone who actually cares but hates fake school conversations. You keep it real. You speak plainly, ask real questions, and don't push too hard. Every reply should feel like a conversation you'd actually have with a smart, tired 9th grader.
+
+This student is brand new. They just shared a bit about themselves. Welcome them briefly, make them feel like this is worth their time, and ask one question about what gets in the way of speaking up in class.`;
+}
+
+// ─── FLOW HANDLERS ───────────────────────────────────────────
+// Each handler makes exactly ONE api() call.
+// History is cached in S.history after init and reused everywhere.
+
+async function handleEnterIdReflect(studentId) {
+  set({ loading: true, error: null });
+  try {
+    // Single call returns both student and history
+    const { student, history } = await api('init', { studentId });
+    if (!student) {
+      set({ loading: false, error: "That ID doesn't exist. Try a different one or register." });
+      return;
+    }
+    const recent = daysSince(student.CurrentGoalSetDate) <= 4;
+    const goalToReflect = history.length === 0
+      ? { text: '[No goal yet]', setDate: today(), source: 'onboard' }
+      : recent
+        ? { text: student.CurrentGoal, setDate: student.CurrentGoalSetDate, source: 'app' }
+        : null;
+
+    set({
+      loading: false, studentId, student, history, goalToReflect, step: 'warmup',
+      warmupPrompt: pick(WARMUP_HUMANIZING, 1)[0],
+      oneWordOptions: pick(WARMUP_WORDS, 5),
+      selectedWords: []
+    });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleOnboardRegister(studentId, nickname, pronounCode, tone) {
+  set({ loading: true, error: null });
+  try {
+    // createStudent creates + returns the new student in one call
+    const { student } = await api('createStudent', { studentId, nickname, pronounCode, tone });
+    set({
+      loading: false, studentId, student, history: [], step: 'warmup',
+      warmupPrompt: pick(WARMUP_HUMANIZING, 1)[0],
+      oneWordOptions: pick(WARMUP_WORDS, 5),
+      selectedWords: []
+    });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleBackgroundSubmit(raw) {
+  set({ loading: true, error: null });
+  try {
+    await api('saveBackground', { studentId: S.studentId, backgroundInfo: raw });
+    // Update local student copy without a re-fetch
+    set({ loading: false, student: { ...S.student, BackgroundInfo: raw } });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleWarmupContinue(response, selectedWords) {
+  set({ loading: true, error: null });
+  let summaryInput = response.trim();
+  if (selectedWords.length > 0) {
+    const words = selectedWords.join(', ');
+    summaryInput += summaryInput ? ` (Also: ${words})` : `Feeling: ${words}`;
+  }
+
+  try {
+    const existing = (S.student.BackgroundInfo || '').trim();
+    // Pass cached history texts so backend can summarise without re-reading Sheets
+    const pastTexts = existing
+      ? [existing, ...S.history.map(e => e.OutcomeReflection).filter(r => r && r.trim().length > 5)]
+      : [];
+
+    const { backgroundInfo } = await api('saveWarmup', {
+      studentId: S.studentId,
+      backgroundInfo: summaryInput,
+      pastTexts
+    });
+
+    // Routing uses cached history — no extra fetch needed
+    let nextStep, goalToReflect;
+    if (S.history.length === 0) {
+      goalToReflect = { text: '[No goal yet]', setDate: today(), source: 'onboard' };
+      nextStep = 'chatbot_motivation';
+    } else {
+      const recent = daysSince(S.student.CurrentGoalSetDate) <= 4;
+      goalToReflect = recent
+        ? { text: S.student.CurrentGoal, setDate: S.student.CurrentGoalSetDate, source: 'app' }
+        : S.goalToReflect;
+      nextStep = recent ? 'reflect_on_goal' : 'check_manual_goal';
+    }
+
+    set({
+      loading: false,
+      student: { ...S.student, BackgroundInfo: backgroundInfo },
+      latestReflection: summaryInput,
+      goalToReflect: goalToReflect || S.goalToReflect,
+      step: nextStep, chatHistory: [], chatTurnCount: 0
+    });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleSubmitReflection(score, reflectionText) {
+  set({ loading: true, error: null });
+  try {
+    // Pass history texts from cache so backend can summarise without re-reading
+    const pastTexts = [
+      ...S.history.map(e => e.OutcomeReflection).filter(r => r && r.trim().length > 5),
+      reflectionText
+    ];
+
+    await api('saveReflection', {
+      studentId: S.studentId,
+      entry: {
+        StudentID: S.studentId,
+        GoalSetDate: S.goalToReflect.setDate,
+        GoalText: S.goalToReflect.text,
+        SuccessMeasures: S.goalToReflect.source === 'manual' ? '[manual]' : (S.student.CurrentSuccessMeasures || ''),
+        OutcomeReflection: reflectionText,
+        GoalAchievement: score,
+        InterpretationSummary: SCORE_LABELS[score],
+        BackgroundInfo: S.student.BackgroundInfo || ''
+      },
+      pastTexts
+    });
+
+    set({
+      loading: false, latestScoreValue: score, latestReflection: reflectionText,
+      step: 'chatbot_motivation', chatHistory: [], chatTurnCount: 0
+    });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleChatReply(userInput, lengthLabel) {
+  set({ loading: true, error: null });
+
+  const goal = S.goalToReflect?.text || '[No goal]';
+  const score = S.latestScoreValue;
+  const reflection = S.latestReflection;
+  const background = S.student?.BackgroundInfo || '[none]';
+
+  const lengthPref = lengthLabel === 'short'
+    ? 'Respond briefly — a few sentences, plain language.'
+    : 'Respond with moderate detail in plain language.';
+
+  const systemPrompt = S.chatTurnCount === 0 && S.goalToReflect?.source === 'onboard'
+    ? buildOnboardPrompt()
+    : S.tonePref === 'drill_sergeant'
+      ? buildDrillSergeantPrompt(goal, score, reflection, background, lengthPref)
+      : buildRealOnePrompt(goal, score, reflection, background, lengthPref);
+
+  const userInputClean = S.chatTurnCount === 0
+    ? (S.goalToReflect?.source === 'onboard'
+        ? `I'm new here. About me: ${reflection || '(not shared yet)'}`
+        : `Goal: '${goal}'. Score: ${score} — ${SCORE_LABELS[score]}. What helped or got in the way: ${reflection}`)
+    : userInput.trim();
+
+  const messages = [{ role: 'system', content: systemPrompt }];
+  for (const turn of S.chatHistory) {
+    messages.push({ role: 'assistant', content: turn.ai });
+    if (turn.user) messages.push({ role: 'user', content: turn.user });
+  }
+  messages.push({ role: 'user', content: userInputClean });
+
+  try {
+    const reply = await api('chat', { messages, maxTokens: 200 });
+    const newTurn = S.chatTurnCount === 0 ? { ai: reply } : { user: userInputClean, ai: reply };
+    set({
+      loading: false,
+      chatHistory: [...S.chatHistory, newTurn],
+      chatTurnCount: S.chatTurnCount + 1
+    });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+async function handleSetGoal(goal, successMeasures) {
+  set({ loading: true, error: null });
+  try {
+    const isFirstEver = S.history.length === 0;
+    await api('setGoal', {
+      studentId: S.studentId,
+      goal, successMeasures, setDate: today(),
+      firstEntry: isFirstEver ? {
+        StudentID: S.studentId,
+        GoalSetDate: today(),
+        GoalText: goal,
+        SuccessMeasures: successMeasures,
+        OutcomeReflection: '[first goal]',
+        GoalAchievement: '[first goal]',
+        BackgroundInfo: S.student?.BackgroundInfo || ''
+      } : null
+    });
+
+    set({ loading: false, step: 'done' });
+  } catch (e) {
+    set({ loading: false, error: e.message });
+  }
+}
+
+// ─── RENDER ENGINE ───────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+
+  if (S.loading) {
+    app.innerHTML = '<div class="loading">Loading…</div>';
+    return;
+  }
+
+  app.innerHTML = '';
+
+  const steps = {
+    enter_id:             renderEnterID,
+    onboard_student:      renderOnboard,
+    warmup:               renderWarmup,
+    check_manual_goal:    renderCheckManualGoal,
+    reflect_on_goal:      renderReflect,
+    chatbot_motivation:   renderChatbot,
+    set_contribution_goal:renderSetGoal,
+    done:                 renderDone
+  };
+
+  (steps[S.step] || renderEnterID)(app);
+
+  if (S.error) {
+    const d = document.createElement('div');
+    d.className = 'error-box';
+    d.textContent = S.error;
+    app.appendChild(d);
+  }
+}
+
+// ─── DOM HELPERS ─────────────────────────────────────────────
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function input(placeholder, val = '') {
+  const i = document.createElement('input');
+  i.type = 'text'; i.placeholder = placeholder; i.value = val; i.className = 'input';
+  return i;
+}
+
+function textarea(placeholder) {
+  const t = document.createElement('textarea');
+  t.placeholder = placeholder; t.className = 'textarea';
+  return t;
+}
+
+function select(options, current) {
+  const s = document.createElement('select');
+  s.className = 'select';
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (o === current) opt.selected = true;
+    s.appendChild(opt);
+  });
+  return s;
+}
+
+function btn(label, cls, onClick) {
+  const b = document.createElement('button');
+  b.className = 'btn ' + (cls || ''); b.textContent = label;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+function row(...children) {
+  const d = el('div', 'row');
+  children.forEach(c => d.appendChild(c));
+  return d;
+}
+
+// ─── STEP RENDERERS ──────────────────────────────────────────
+function renderEnterID(app) {
+  app.appendChild(el('h1', '', 'Class Contribution Reflection'));
+  app.appendChild(el('p', 'muted', 'Enter your student ID to get started.'));
+
+  const idInput = input('Student ID');
+  app.appendChild(idInput);
+
+  app.appendChild(row(
+    btn('Continue', 'btn-primary', async () => {
+      const id = idInput.value.trim();
+      if (!id) { set({ error: 'Enter your Student ID.' }); return; }
+      set({ error: null });
+      await handleEnterIdReflect(id);
+    }),
+    btn('Register new student', '', () => {
+      const id = idInput.value.trim();
+      if (!id) { set({ error: 'Enter a Student ID first.' }); return; }
+      set({ error: null, step: 'onboard_student', studentId: id });
+    })
+  ));
+}
+
+function renderOnboard(app) {
+  app.appendChild(el('h2', '', 'Register a New Student'));
+  app.appendChild(el('p', 'muted', `Student ID: ${S.studentId}`));
+
+  const nicknameInput = input('Nickname');
+  const pronounInput  = input('Pronouns (e.g. she/her, they/them)');
+  const toneSelect    = select(['Reflective', 'Coach', 'Challenger']);
+
+  app.appendChild(el('p', 'label', 'Nickname'));    app.appendChild(nicknameInput);
+  app.appendChild(el('p', 'label', 'Pronouns'));    app.appendChild(pronounInput);
+  app.appendChild(el('p', 'label', 'Preferred tone')); app.appendChild(toneSelect);
+
+  app.appendChild(btn('Register', 'btn-primary', async () => {
+    await handleOnboardRegister(S.studentId, nicknameInput.value.trim(), pronounInput.value.trim(), toneSelect.value);
+  }));
+}
+
+function renderWarmup(app) {
+  const { student, warmupPrompt, oneWordOptions, selectedWords } = S;
+  const nickname = student?.Nickname || 'there';
+
+  // First-time: ask background question if BackgroundInfo is empty
+  if (!student?.BackgroundInfo?.trim()) {
+    app.appendChild(el('h2', '', `Hi ${nickname} — I'd like to get to know you.`));
+    app.appendChild(el('p', 'muted', "It's easier to make your reflections meaningful if I know a bit about what you care about."));
+
+    const bioInput = textarea('What do you want me to know about you?');
+    app.appendChild(bioInput);
+
+    app.appendChild(btn('Continue', 'btn-primary', async () => {
+      const raw = bioInput.value.trim();
+      await handleBackgroundSubmit(raw);
+    }));
+    return;
+  }
+
+  app.appendChild(el('h2', '', `Hey ${nickname} — quick check-in`));
+  app.appendChild(el('p', 'question', warmupPrompt));
+
+  const responseInput = textarea('Your response (optional)');
+  app.appendChild(responseInput);
+
+  app.appendChild(el('p', 'label', 'AND/OR — pick words that fit how you feel:'));
+
+  const wordRow = el('div', 'word-row');
+  oneWordOptions.forEach(word => {
+    const b = document.createElement('button');
+    b.className = 'word-btn' + (selectedWords.includes(word) ? ' active' : '');
+    b.textContent = word;
+    b.addEventListener('click', () => {
+      const words = selectedWords.includes(word)
+        ? selectedWords.filter(w => w !== word)
+        : [...selectedWords, word];
+      set({ selectedWords: words });
+    });
+    wordRow.appendChild(b);
+  });
+  app.appendChild(wordRow);
+
+  if (selectedWords.length > 0) {
+    app.appendChild(el('p', 'muted', `Selected: ${selectedWords.join(', ')}`));
+  }
+
+  app.appendChild(row(
+    btn('Continue', 'btn-primary', async () => {
+      await handleWarmupContinue(responseInput.value, selectedWords);
+    }),
+    btn('Refresh options', '', () => {
+      set({ warmupPrompt: pick(WARMUP_HUMANIZING, 1)[0], oneWordOptions: pick(WARMUP_WORDS, 5) });
+    })
+  ));
+}
+
+function renderCheckManualGoal(app) {
+  app.appendChild(el('h2', '', 'Did you set a goal earlier today?'));
+  app.appendChild(el('p', 'muted', 'Choose it from the list, or skip ahead to set a new one.'));
+
+  const goalSelect = select(GOALS);
+  app.appendChild(goalSelect);
+
+  app.appendChild(row(
+    btn('That was my goal', 'btn-primary', () => {
+      set({ goalToReflect: { text: goalSelect.value, setDate: today(), source: 'manual' }, step: 'reflect_on_goal' });
+    }),
+    btn("I didn't set a goal", '', () => {
+      set({ step: 'set_contribution_goal' });
+    })
+  ));
+}
+
+function renderReflect(app) {
+  const { goalToReflect, student } = S;
+
+  app.appendChild(el('h2', '', 'Reflect on Your Goal'));
+
+  const callout = el('div', 'goal-callout');
+  callout.textContent = goalToReflect?.text || '[no goal]';
+  app.appendChild(callout);
+
+  app.appendChild(el('p', 'muted', `Set: ${goalToReflect?.setDate || 'today'}`));
+  if (goalToReflect?.source !== 'manual' && student?.CurrentSuccessMeasures) {
+    app.appendChild(el('p', 'muted', `Success looks like: ${student.CurrentSuccessMeasures}`));
+  }
+
+  app.appendChild(el('p', 'label', 'Rate your progress:'));
+
+  let selectedScore = 0;
+
+  const radioGroup = el('div', 'radio-group');
+  [4, 3, 2, 1, 0].forEach(score => {
+    const label = document.createElement('label');
+    label.className = 'radio-label' + (score === 0 ? ' checked' : '');
+
+    const radio = document.createElement('input');
+    radio.type = 'radio'; radio.name = 'score'; radio.value = score;
+    if (score === 0) radio.checked = true;
+    radio.addEventListener('change', () => {
+      selectedScore = score;
+      document.querySelectorAll('.radio-label').forEach(l => l.classList.remove('checked'));
+      label.classList.add('checked');
+    });
+
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(` ${score} — ${SCORE_LABELS[score]}`));
+    radioGroup.appendChild(label);
+  });
+  app.appendChild(radioGroup);
+
+  app.appendChild(el('p', 'label', 'What helped or got in the way?'));
+  const reflectionInput = textarea('Share what happened…');
+  app.appendChild(reflectionInput);
+
+  app.appendChild(btn('Submit Reflection', 'btn-primary', async () => {
+    await handleSubmitReflection(selectedScore, reflectionInput.value);
+  }));
+}
+
+function renderChatbot(app) {
+  const { chatHistory, chatTurnCount, tonePref } = S;
+
+  app.appendChild(el('h2', '', 'Reflect with an AI'));
+
+  if (chatTurnCount === 0) {
+    app.appendChild(el('p', 'label', 'Choose a style:'));
+    app.appendChild(row(
+      btn('Nicer', 'btn-green', async () => {
+        set({ tonePref: 'real_one', error: null });
+        await handleChatReply('', 'short');
+      }),
+      btn('Tougher', 'btn-red', async () => {
+        set({ tonePref: 'drill_sergeant', error: null });
+        await handleChatReply('', 'short');
+      })
+    ));
+
+    const hr = document.createElement('hr'); hr.className = 'divider';
+    app.appendChild(hr);
+    app.appendChild(btn('Skip to goal setting', 'btn-ghost', () => set({ step: 'set_contribution_goal' })));
+
+  } else if (chatTurnCount < 3) {
+    const toneLabel = tonePref === 'drill_sergeant' ? 'Tougher' : 'Nicer';
+    const pill = el('span', 'tone-pill', toneLabel);
+    app.appendChild(pill);
+
+    const convo = el('div', 'conversation');
+    chatHistory.forEach((turn, i) => {
+      if (i > 0 && turn.user) {
+        const u = el('p', 'chat-user', `You: ${turn.user}`);
+        convo.appendChild(u);
+      }
+      convo.appendChild(el('p', 'chat-ai', turn.ai));
+    });
+    app.appendChild(convo);
+
+    const replyInput = input('Your reply…');
+    app.appendChild(replyInput);
+
+    app.appendChild(row(
+      btn('Shorter response', '', async () => await handleChatReply(replyInput.value, 'short')),
+      btn('Longer response',  '', async () => await handleChatReply(replyInput.value, 'long'))
+    ));
+
+    const hr = document.createElement('hr'); hr.className = 'divider';
+    app.appendChild(hr);
+    app.appendChild(btn('Skip to goal setting', 'btn-ghost', () => set({ step: 'set_contribution_goal' })));
+
+  } else {
+    const convo = el('div', 'conversation');
+    chatHistory.forEach((turn, i) => {
+      if (i > 0 && turn.user) convo.appendChild(el('p', 'chat-user', `You: ${turn.user}`));
+      convo.appendChild(el('p', 'chat-ai', turn.ai));
+    });
+    app.appendChild(convo);
+
+    const msg = el('p', 'success-msg', "Nice work thinking that through. Keep the AI's last question in mind as you set your next goal.");
+    app.appendChild(msg);
+    app.appendChild(btn('Continue to Goal Setting', 'btn-primary', () => set({ step: 'set_contribution_goal' })));
+  }
+}
+
+function renderSetGoal(app) {
+  app.appendChild(el('h2', '', 'Set a goal for next class'));
+  app.appendChild(el('p', 'muted', 'Choose from the list below.'));
+
+  const goalSelect = select(GOALS, S.goalToReflect?.text);
+  app.appendChild(goalSelect);
+
+  app.appendChild(el('p', 'label', 'What will success look like?'));
+  const measureInput = textarea('Describe what success looks like…');
+  app.appendChild(measureInput);
+
+  app.appendChild(btn('Set Goal', 'btn-primary', async () => {
+    if (!measureInput.value.trim()) { set({ error: 'Describe what success looks like.' }); return; }
+    await handleSetGoal(goalSelect.value, measureInput.value.trim());
+  }));
+}
+
+function renderDone(app) {
+  app.appendChild(el('h2', '', "You're all set for today!"));
+  app.appendChild(el('p', 'muted', 'See you next time.'));
+  app.appendChild(btn('Start Over', 'btn-primary', () => { resetState(); render(); }));
+}
+
+// ─── BOOT ────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
